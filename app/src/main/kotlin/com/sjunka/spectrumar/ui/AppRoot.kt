@@ -240,7 +240,7 @@ private fun SplashScreen() {
             Text("Optical tracking, on your table", color = Tok.Muted, fontSize = 13.sp)
         }
         Text(
-            "Independent concept prototype. Not affiliated with Genius Sports.", color = Tok.Muted, fontSize = 11.sp, textAlign = TextAlign.Center,
+            "Independent concept prototype.", color = Tok.Muted, fontSize = 11.sp, textAlign = TextAlign.Center,
             modifier = Modifier.align(Alignment.BottomCenter).windowInsetsPadding(WindowInsets.navigationBars).padding(bottom = 28.dp, start = 32.dp, end = 32.dp),
         )
     }
@@ -266,7 +266,7 @@ private fun AboutSheet(onClose: () -> Unit) {
                 RoundButton(Icons24.Close, false, "Close") { onClose() }
             }
             Text(
-                "An independent portfolio concept: optical tracking data as a 3D tactical board you can orbit, scrub and place on a real table in AR. It is not an official product and is not affiliated with Genius Sports.",
+                "An independent portfolio concept: optical tracking data as a 3D tactical board you can orbit, scrub and place on a real table in AR. It is not an official product and is not affiliated with any company.",
                 color = Tok.Text, fontSize = 14.sp, lineHeight = 20.sp,
             )
             Sect("What you are seeing")
@@ -279,7 +279,7 @@ private fun AboutSheet(onClose: () -> Unit) {
             Sect("Honest notes")
             Para("The AI-style insights are local models on open data, not a live feed. AR mode needs an ARCore supported phone and camera permission; without them the app stays in 3D table mode.")
             Spacer(Modifier.height(4.dp))
-            Text("Independent concept prototype. Not affiliated with Genius Sports.", color = Tok.Muted, fontSize = 11.sp)
+            Text("Independent concept prototype.", color = Tok.Muted, fontSize = 11.sp)
         }
     }
 }

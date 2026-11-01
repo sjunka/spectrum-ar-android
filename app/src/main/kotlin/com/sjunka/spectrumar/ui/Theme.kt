@@ -35,7 +35,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
 
-/** Design tokens shared by the three Genius Sports concept prototypes. */
+/** Design tokens shared by the three concept prototypes. */
 object Tok {
     val Bg = Color(0xFF070B14)
     val Surface = Color(0xFF0F1626)

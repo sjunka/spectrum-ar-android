@@ -2,19 +2,19 @@
 
 A tactical board built from real optical tracking data: 22 players and the ball replayed as a 3D table you can orbit, scrub and place on a real surface in AR. Native Kotlin, Jetpack Compose (Material 3) and SceneView (Filament + ARCore).
 
-Independent portfolio concept. Not an official product and not affiliated with Genius Sports.
+Independent portfolio concept. Not an official product.
 
 ## Screenshots
 
 Captured on an Android 16 arm64 emulator (3D table mode). AR cannot run there, see "Testing status".
 
-| Splash | Table 3D | Pitch control | What-if |
-| --- | --- | --- | --- |
-| ![Splash](docs/screenshots/00-splash.png) | ![Table](docs/screenshots/01-table.png) | ![Pitch control](docs/screenshots/02-pitch-control.png) | ![What-if](docs/screenshots/03-what-if.png) |
+| Table 3D | Pitch control | What-if |
+| --- | --- | --- |
+| ![Table](docs/screenshots/01-table.png) | ![Pitch control](docs/screenshots/02-pitch-control.png) | ![What-if](docs/screenshots/03-what-if.png) |
 
-| Stadium camera | Ball + cluster | About | AR unavailable |
-| --- | --- | --- | --- |
-| ![Stadium](docs/screenshots/04-stadium.png) | ![Ball](docs/screenshots/05-ball-cluster.png) | ![About](docs/screenshots/06-about.png) | ![AR unavailable](docs/screenshots/07-ar-unavailable.png) |
+| Stadium camera | Ball + cluster | AR unavailable |
+| --- | --- | --- |
+| ![Stadium](docs/screenshots/04-stadium.png) | ![Ball](docs/screenshots/05-ball-cluster.png) | ![AR unavailable](docs/screenshots/07-ar-unavailable.png) |
 
 ## Features
 
