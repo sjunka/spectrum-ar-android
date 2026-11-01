@@ -34,6 +34,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -437,8 +439,6 @@ private fun LabelsCanvas(c: SpectrumController) {
         }
     }
 }
-
-private fun Color.toArgb(): Int = androidx.compose.ui.graphics.toArgb(this)
 
 // ---- demo --------------------------------------------------------------------------------
 

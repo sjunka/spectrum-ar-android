@@ -131,7 +131,7 @@ class SpectrumController(
         haptic(Haptic.CLICK)
     }
 
-    fun setPlaying(p: Boolean) { clock.playing = p; playing = p; if (p) clearOverrides() }
+    fun applyPlaying(p: Boolean) { clock.playing = p; playing = p; if (p) clearOverrides() }
 
     fun cycleSpeed() { clock.cycleSpeed(); speed = clock.speed.toFloat(); haptic(Haptic.TICK) }
 
@@ -179,7 +179,7 @@ class SpectrumController(
     fun setWhatIf(on: Boolean, fromUser: Boolean = false) {
         if (on == whatIfOn) return
         whatIfOn = on
-        if (on) { setPlaying(false); overridesDirty = true; frame.arrowGrow = 0f }
+        if (on) { applyPlaying(false); overridesDirty = true; frame.arrowGrow = 0f }
         else { clearOverrides(); frame.arrowCount = 0; options = emptyList(); whatIfNote = "" }
         if (fromUser) haptic(Haptic.CONFIRM)
     }
@@ -197,7 +197,7 @@ class SpectrumController(
             camera.snapToGoal()
         } else {
             caption = ""
-            setSpeed(1.0); setPlaying(true)
+            setSpeed(1.0); applyPlaying(true)
             setPitchControl(false); setWhatIf(false); clearSelection()
         }
     }
@@ -432,7 +432,7 @@ class SpectrumController(
                     overridesDirty = true; arrowAnim = 0.2f
                 }
             }
-            is DemoAction.Play -> setPlaying(a.playing)
+            is DemoAction.Play -> applyPlaying(a.playing)
             is DemoAction.Caption -> caption = a.text
         }
     }

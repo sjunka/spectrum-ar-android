@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
@@ -72,13 +73,9 @@ fun Modifier.glass(radius: Dp = Tok.Radius, alpha: Float = 0.86f): Modifier = th
     .background(Brush.verticalGradient(listOf(Tok.Surface2.copy(alpha = alpha), Tok.Surface.copy(alpha = alpha))))
     .border(BorderStroke(1.dp, Tok.Border.copy(alpha = 0.9f)), RoundedCornerShape(radius))
 
-fun Modifier.noRipple(onClick: () -> Unit): Modifier = composedClickable(onClick)
-
-@Composable
-private fun rememberNoRipple() = remember { MutableInteractionSource() }
-
-private fun Modifier.composedClickable(onClick: () -> Unit): Modifier =
-    androidx.compose.ui.composed { clickable(interactionSource = rememberNoRipple(), indication = null, onClick = onClick) }
+fun Modifier.noRipple(onClick: () -> Unit): Modifier = composed {
+    clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = onClick)
+}
 
 /** Minimal icon set drawn from 24x24 path data so no drawable assets are needed. */
 object Icons24 {
