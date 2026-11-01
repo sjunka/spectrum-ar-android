@@ -60,6 +60,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sjunka.spectrumar.app.AppMode
@@ -84,7 +85,10 @@ fun Hud(
         AnimatedVisibility(!c.demoOn, enter = fadeIn(), exit = fadeOut()) {
             Box(Modifier.fillMaxSize()) {
                 TopBar(c, modeEnabled, onMode, Modifier.align(Alignment.TopCenter))
-                                Column(Modifier.align(Alignment.BottomCenter), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                Column(
+                    Modifier.align(Alignment.BottomCenter).onSizeChanged { c.camera.reserveBottom(it.height / c.overlayHeight.coerceAtLeast(1f)) },
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
                     ToolRail(c, Modifier.align(Alignment.CenterHorizontally))
                     AnimatedVisibility(c.pitchControlOn, enter = fadeIn() + slideInVertically { it / 2 }, exit = fadeOut() + slideOutVertically { it / 2 }) { ControlBar(c) }
                     AnimatedVisibility(c.whatIfOn, enter = fadeIn() + slideInVertically { it / 2 }, exit = fadeOut() + slideOutVertically { it / 2 }) { WhatIfPanel(c) }
@@ -292,24 +296,23 @@ private fun Scrubber(c: SpectrumController) {
 @Composable
 private fun ControlBar(c: SpectrumController) {
     val share by animateFloatAsState(c.homeShare, tween(250), label = "share")
-    Column(
-        Modifier.fillMaxWidth().padding(horizontal = 12.dp).glass().padding(horizontal = 16.dp, vertical = 12.dp),
+    val pct = (share * 100).roundToInt()
+    Row(
+        Modifier.fillMaxWidth().padding(horizontal = 12.dp).glass().padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("PITCH CONTROL", color = Tok.Muted, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.5.sp)
-            Spacer(Modifier.weight(1f))
-            Text("HOME ", color = Tok.Home, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-            Text("${(share * 100).roundToInt()}%", color = Tok.Home, style = Num, fontSize = 18.sp)
-            Text("   ${100 - (share * 100).roundToInt()}%", color = Tok.Away, style = Num, fontSize = 18.sp)
-            Text(" AWAY", color = Tok.Away, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+        Text("$pct%", color = Tok.Home, style = Num, fontSize = 18.sp, modifier = Modifier.width(48.dp))
+        Column(Modifier.weight(1f)) {
+            Text("PITCH CONTROL", color = Tok.Muted, fontSize = 9.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.5.sp, modifier = Modifier.align(Alignment.CenterHorizontally))
+            Spacer(Modifier.height(4.dp))
+            Canvas(Modifier.fillMaxWidth().height(8.dp)) {
+                val r = CornerRadius(size.height)
+                drawRoundRect(Tok.Away, Offset.Zero, size, r)
+                drawRoundRect(Brush.horizontalGradient(listOf(Tok.Home, Color(0xFF00C48A))), Offset.Zero, Size(size.width * share, size.height), r)
+                drawRoundRect(Color.White, Offset(size.width * share - 1.5.dp.toPx(), -2.dp.toPx()), Size(3.dp.toPx(), size.height + 4.dp.toPx()), CornerRadius(2f))
+            }
         }
-        Spacer(Modifier.height(8.dp))
-        Canvas(Modifier.fillMaxWidth().height(8.dp)) {
-            val r = CornerRadius(size.height)
-            drawRoundRect(Tok.Away, Offset.Zero, size, r)
-            drawRoundRect(Brush.horizontalGradient(listOf(Tok.Home, Color(0xFF00C48A))), Offset.Zero, Size(size.width * share, size.height), r)
-            drawRoundRect(Color.White, Offset(size.width * share - 1.5.dp.toPx(), -2.dp.toPx()), Size(3.dp.toPx(), size.height + 4.dp.toPx()), CornerRadius(2f))
-        }
+        Text("${100 - pct}%", color = Tok.Away, style = Num, fontSize = 18.sp, modifier = Modifier.width(48.dp), textAlign = TextAlign.End)
     }
 }
 
@@ -317,7 +320,7 @@ private fun ControlBar(c: SpectrumController) {
 
 @Composable
 private fun WhatIfPanel(c: SpectrumController) {
-    Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp).glass().padding(horizontal = 16.dp, vertical = 12.dp)) {
+    Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp).glass().padding(horizontal = 14.dp, vertical = 10.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("WHAT-IF", color = Tok.Warn, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.5.sp)
             Spacer(Modifier.width(10.dp))
@@ -328,25 +331,29 @@ private fun WhatIfPanel(c: SpectrumController) {
             Text("Drag any player on the pitch to test a different shape.", color = Tok.Muted, fontSize = 12.sp)
         }
         val maxEv = (c.options.maxOfOrNull { it.ev } ?: 0.0001).coerceAtLeast(0.0001)
-        for ((idx, o) in c.options.withIndex()) {
-            Row(Modifier.padding(vertical = 3.dp), verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    Modifier.size(26.dp).clip(CircleShape).background(if (o.best) Tok.Primary else Tok.Surface2)
-                        .border(1.dp, if (o.best) Tok.Primary else Tok.Border, CircleShape),
-                    contentAlignment = Alignment.Center,
-                ) { Text("${o.number}", color = if (o.best) Tok.Bg else Tok.Text, style = Num, fontSize = 12.sp, fontWeight = FontWeight.Bold) }
-                Spacer(Modifier.width(10.dp))
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            for ((idx, o) in c.options.withIndex()) {
                 val frac by animateFloatAsState((o.ev / maxEv).toFloat().coerceIn(0.04f, 1f), tween(300), label = "ev$idx")
-                Canvas(Modifier.weight(1f).height(8.dp)) {
-                    drawRoundRect(Tok.Surface2, Offset.Zero, size, CornerRadius(size.height))
-                    drawRoundRect(
-                        if (o.best) Tok.Primary else Tok.Muted.copy(0.7f), Offset.Zero,
-                        Size(size.width * frac, size.height), CornerRadius(size.height),
-                    )
-                }
-                Spacer(Modifier.width(10.dp))
-                Column(horizontalAlignment = Alignment.End, modifier = Modifier.width(92.dp)) {
-                    Text("xT ${"%.3f".format(o.xt)}", color = if (o.best) Tok.Primary else Tok.Text, style = Num, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                Column(
+                    Modifier.weight(1f).clip(RoundedCornerShape(14.dp))
+                        .background(if (o.best) Tok.Primary.copy(alpha = 0.12f) else Tok.Surface2.copy(alpha = 0.6f))
+                        .border(1.dp, if (o.best) Tok.Primary else Tok.Border, RoundedCornerShape(14.dp)).padding(8.dp),
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            Modifier.size(24.dp).clip(CircleShape).background(if (o.best) Tok.Primary else Tok.Surface2)
+                                .border(1.dp, if (o.best) Tok.Primary else Tok.Border, CircleShape),
+                            contentAlignment = Alignment.Center,
+                        ) { Text("${o.number}", color = if (o.best) Tok.Bg else Tok.Text, style = Num, fontSize = 11.sp, fontWeight = FontWeight.Bold) }
+                        Spacer(Modifier.width(6.dp))
+                        Text("xT ${"%.3f".format(o.xt)}", color = if (o.best) Tok.Primary else Tok.Text, style = Num, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
+                    Spacer(Modifier.height(6.dp))
+                    Canvas(Modifier.fillMaxWidth().height(5.dp)) {
+                        drawRoundRect(Tok.Surface, Offset.Zero, size, CornerRadius(size.height))
+                        drawRoundRect(if (o.best) Tok.Primary else Tok.Muted.copy(0.8f), Offset.Zero, Size(size.width * frac, size.height), CornerRadius(size.height))
+                    }
+                    Spacer(Modifier.height(4.dp))
                     Text("${(o.probability * 100).roundToInt()}% complete", color = Tok.Muted, style = Num, fontSize = 10.sp)
                 }
             }
@@ -372,7 +379,7 @@ private fun PlayerCard(c: SpectrumController) {
                     alpha = 1f
                     val margin = 12.dp.toPx()
                     translationX = (a.x - size.width / 2f).coerceIn(margin, (c.overlayWidth - size.width - margin).coerceAtLeast(margin))
-                    translationY = (a.y - size.height - 14.dp.toPx()).coerceIn(90.dp.toPx(), c.overlayHeight.coerceAtLeast(500f))
+                    translationY = (a.y - size.height - 14.dp.toPx()).coerceIn(122.dp.toPx(), c.overlayHeight.coerceAtLeast(500f))
                 }
             }
             .width(176.dp)
@@ -447,7 +454,7 @@ private fun DemoOverlay(c: SpectrumController) {
     val bars by animateFloatAsState(if (c.demoOn) 1f else 0f, tween(600), label = "bars")
     if (bars <= 0.001f) return
     Box(Modifier.fillMaxSize().noRipple { c.setDemo(false) }) {
-        Box(Modifier.fillMaxWidth().height((70 * bars).dp).background(Color.Black).align(Alignment.TopCenter))
+        Box(Modifier.fillMaxWidth().height((96 * bars).dp).background(Color.Black).align(Alignment.TopCenter))
         Box(Modifier.fillMaxWidth().height((120 * bars).dp).background(Color.Black).align(Alignment.BottomCenter))
         Row(
             Modifier.align(Alignment.TopStart).windowInsetsPadding(WindowInsets.statusBars).padding(start = 18.dp, top = 8.dp),

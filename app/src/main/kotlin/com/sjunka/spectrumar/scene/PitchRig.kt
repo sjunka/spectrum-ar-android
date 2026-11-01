@@ -241,7 +241,7 @@ class PitchRig(
             val d = (v - 0.5f) * 2f              // -1 away .. +1 home
             val ad = kotlin.math.abs(d)
             val s = ad * ad * (3f - 2f * ad)     // smoothstep: soft boundary, saturated cores
-            val a = (0.07f + 0.50f * s)
+            val a = (0.06f + 0.44f * s)
             val r: Float; val g: Float; val b: Float
             if (d >= 0) { r = 0f; g = 0.90f; b = 0.63f } else { r = 0.486f; g = 0.424f; b = 1f }
             // near the contested line the colours blend towards white

@@ -67,11 +67,12 @@ fun ArScene(c: SpectrumController, bitmaps: RigBitmaps, onFailure: (String) -> U
     val cameraNode = rememberARCameraNode(engine)
     val density = LocalDensity.current.density
     val st = remember { ArPlacement() }
+    val token = remember { Any() }
     val projector = remember(view) { FilamentProjector(view, { c.rig }, { cameraNode.worldPosition }, density) }
 
     DisposableEffect(c) {
         c.arPhase = ArPhase.SEARCHING
-        onDispose { c.rig = null; st.anchor?.detach(); st.anchor = null; st.lastHit = null }
+        onDispose { if (c.rigOwner === token) { c.rig = null; c.rigOwner = null }; st.anchor?.detach(); st.anchor = null; st.lastHit = null }
     }
 
     Box(modifier.fillMaxSize()) {
@@ -108,7 +109,7 @@ fun ArScene(c: SpectrumController, bitmaps: RigBitmaps, onFailure: (String) -> U
         ) {
             val rig = remember(engine) {
                 PitchRig(engine, materialLoader, c.data, bitmaps).also {
-                    it.setFloodlights(false); c.rig = it
+                    it.setFloodlights(false); c.rig = it; c.rigOwner = token
                     it.controlVisible = c.pitchControlOn
                     it.root.scale = Scale(TABLE_SCALE)
                 }

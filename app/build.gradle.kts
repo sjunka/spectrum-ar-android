@@ -17,6 +17,8 @@ android {
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        // Real phones and the arm64 emulator only: keeps the APK small enough for git.
+        ndk { abiFilters += setOf("arm64-v8a") }
     }
 
     buildTypes {

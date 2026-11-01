@@ -47,6 +47,7 @@ fun TableScene(c: SpectrumController, bitmaps: RigBitmaps, modifier: Modifier = 
     val mainLight = rememberMainLightNode(engine) { intensity = 95_000f; isShadowCaster = false }
     val fillLight = rememberFillLightNode(engine) { intensity = 38_000f; isShadowCaster = false }
 
+    val token = remember { Any() }
     val projector = remember(view) { FilamentProjector(view, { c.rig }, { cameraNode.worldPosition }, density) }
 
     SideEffect {
@@ -60,7 +61,7 @@ fun TableScene(c: SpectrumController, bitmaps: RigBitmaps, modifier: Modifier = 
             cameraNode.position = Position(e.x, e.y, e.z)
             cameraNode.lookAt(Position(p.tx, p.ty, p.tz), Direction(0f, 1f, 0f), smooth = false)
         }
-        onDispose { c.onCamera = null; c.rig = null }
+        onDispose { c.onCamera = null; if (c.rigOwner === token) { c.rig = null; c.rigOwner = null } }
     }
 
     Box(modifier.fillMaxSize()) {
@@ -74,7 +75,7 @@ fun TableScene(c: SpectrumController, bitmaps: RigBitmaps, modifier: Modifier = 
             autoCenterContent = false,
             onGestureListener = null,
         ) {
-            val rig = remember(engine) { PitchRig(engine, materialLoader, c.data, bitmaps).also { c.rig = it; it.setFloodlights(false); it.controlVisible = c.pitchControlOn } }
+            val rig = remember(engine) { PitchRig(engine, materialLoader, c.data, bitmaps).also { c.rig = it; c.rigOwner = token; it.setFloodlights(false); it.controlVisible = c.pitchControlOn } }
             NodeLifecycle(rig.root, null)
             val driver = remember(engine) { Node(engine).also { d -> d.onFrame = { t -> c.onFrame(t, projector) } } }
             NodeLifecycle(driver, null)

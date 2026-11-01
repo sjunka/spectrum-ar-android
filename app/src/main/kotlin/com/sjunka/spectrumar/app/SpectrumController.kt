@@ -69,6 +69,8 @@ class SpectrumController(
     private val n = data.playerCount
 
     var rig: PitchRig? = null
+    /** Scene that created [rig]; a late dispose of a replaced scene must not clear the new one. */
+    var rigOwner: Any? = null
     var onCamera: ((OrbitPose) -> Unit)? = null
 
     // Compose-visible state
@@ -193,10 +195,11 @@ class SpectrumController(
         demoOn = on
         haptic(Haptic.HEAVY)
         if (on) {
-            demoClock = 0.0; demoPrev = -1.0; clearSelection(); setWhatIf(false)
+            demoClock = 0.0; demoPrev = -1.0; clearSelection(); setWhatIf(false); camera.reserveBottom(0.14f)
             camera.snapToGoal()
         } else {
-            caption = ""
+            caption = ""; camera.yawBias = 0f; pendingSelectCarrier = false; demoCarrierSelect = false
+            setPreset(CameraPreset.TACTICAL, fromUser = false)
             setSpeed(1.0); applyPlaying(true)
             setPitchControl(false); setWhatIf(false); clearSelection()
         }

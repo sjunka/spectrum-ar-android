@@ -126,8 +126,16 @@ class CameraController {
     var yawBias = 0f
     var easeRate = 3.2f
 
-    private val tacticalBox = NdcBox(0.97f, -0.34f, 0.76f)
-    private val ballBox = NdcBox(0.80f, -0.30f, 0.62f)
+    private var tacticalBox = NdcBox(0.97f, -0.34f, 0.76f)
+
+    /** HUD panels cover the bottom [fraction] of the screen: keep the board above them. */
+    fun reserveBottom(fraction: Float) {
+        val yMin = (-1f + 2f * fraction + 0.04f).coerceIn(-0.6f, 0.35f)
+        if (abs(yMin - tacticalBox.yMin) < 0.01f) return
+        tacticalBox = NdcBox(0.97f, yMin, 0.76f)
+        if (preset == CameraPreset.TACTICAL) goal = goalFor(CameraPreset.TACTICAL, Vec2.ZERO, emptyList())
+    }
+    private val ballBox get() = NdcBox(0.86f, tacticalBox.yMin + 0.06f, 0.66f)
 
     fun setPreset(p: CameraPreset, ball: Vec2 = Vec2.ZERO, others: List<Vec2> = emptyList()) {
         preset = p
@@ -143,21 +151,21 @@ class CameraController {
     fun goalFor(p: CameraPreset, ball: Vec2, others: List<Vec2>): OrbitPose = when (p) {
         CameraPreset.TACTICAL -> defaultTactical(aspect, tacticalBox, yawBias)
         CameraPreset.STADIUM -> {
-            val bx = ball.x.coerceIn(-30f, 30f) * 0.6f
-            val bz = ball.y * 0.35f
-            OrbitPose(bx, 0f, bz, -PI.toFloat() / 2 + 0.18f + yawBias, 0.30f, 74f)
+            // low broadcast-style angle from the corner, whole board kept in frame
+            val yaw = -PI.toFloat() / 2 + 0.22f + yawBias
+            CameraMath.frame(CameraMath.pitchCorners(BOARD_MARGIN), yaw, 0.6f, aspect, NdcBox(0.97f, tacticalBox.yMin, 0.76f), minDist = 40f)
         }
         CameraPreset.BALL -> {
             val near = others.filter { it.distanceTo(ball) < 26f }
             val pts = (listOf(ball) + near).map { Vec3(it.x, 0f, it.y) } + extraHeight(ball)
             val yaw = -PI.toFloat() / 2 + (ball.y / 34f).coerceIn(-1f, 1f) * 0.22f + yawBias
-            CameraMath.frame(pts, yaw, 0.70f, aspect, ballBox, minDist = 30f, maxDist = 160f)
+            CameraMath.frame(pts, yaw, 0.78f, aspect, ballBox, minDist = 72f, maxDist = 170f)
         }
         CameraPreset.CLOSE -> {
             val near = others.filter { it.distanceTo(ball) < 13f }
             val pts = (listOf(ball) + near).map { Vec3(it.x, 0f, it.y) } + extraHeight(ball)
             val yaw = -PI.toFloat() / 2 + (ball.y / 34f).coerceIn(-1f, 1f) * 0.35f + yawBias
-            CameraMath.frame(pts, yaw, 0.52f, aspect, ballBox, minDist = 16f, maxDist = 80f)
+            CameraMath.frame(pts, yaw, 0.62f, aspect, ballBox, minDist = 44f, maxDist = 100f)
         }
         CameraPreset.FREE -> current
     }

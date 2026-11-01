@@ -180,13 +180,12 @@ private fun Main(l: Loaded) {
     androidx.compose.runtime.DisposableEffect(c) { onDispose { c.shutdown() } }
 
     Box(Modifier.fillMaxSize().background(Tok.Bg)) {
-        Crossfade(c.mode, animationSpec = tween(300), label = "mode") { m ->
-            when (m) {
-                AppMode.TABLE -> TableScene(c, l.bitmaps)
-                AppMode.AR -> ArScene(c, l.bitmaps, onFailure = { msg ->
-                    c.mode = AppMode.TABLE; notice = "$msg The 3D table still works."
-                })
-            }
+        // No cross-fade: two live scenes would fight over the shared rig and frame driver.
+        when (c.mode) {
+            AppMode.TABLE -> TableScene(c, l.bitmaps)
+            AppMode.AR -> ArScene(c, l.bitmaps, onFailure = { msg ->
+                c.mode = AppMode.TABLE; notice = "$msg The 3D table still works."
+            })
         }
         Hud(c, modeEnabled = !checkingAr, onMode = ::onMode)
 
@@ -199,11 +198,13 @@ private fun Main(l: Loaded) {
             }
             Banner(msg, c.arPhase == ArPhase.READY, Modifier.align(Alignment.TopCenter).windowInsetsPadding(WindowInsets.statusBars).padding(top = 78.dp))
         }
+        LaunchedEffect(notice) { val n = notice; if (n != null) { delay(7000); if (notice == n) notice = null } }
+        var lastNotice by remember { mutableStateOf("") }
+        if (notice != null) lastNotice = notice ?: ""
         AnimatedVisibility(notice != null, Modifier.align(Alignment.TopCenter), enter = fadeIn(), exit = fadeOut()) {
-            LaunchedEffect(notice) { val n = notice; delay(7000); if (notice == n) notice = null }
             Box(Modifier.windowInsetsPadding(WindowInsets.statusBars).padding(top = 78.dp, start = 16.dp, end = 16.dp).noRipple { notice = null }) {
                 Column(Modifier.glass().border(1.dp, Tok.Warn.copy(0.6f), RoundedCornerShape(Tok.Radius)).padding(14.dp)) {
-                    Text(notice ?: "", color = Tok.Text, fontSize = 13.sp, lineHeight = 18.sp)
+                    Text(lastNotice, color = Tok.Text, fontSize = 13.sp, lineHeight = 18.sp)
                 }
             }
         }
