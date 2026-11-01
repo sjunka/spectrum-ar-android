@@ -74,7 +74,7 @@ fun TableScene(c: SpectrumController, bitmaps: RigBitmaps, modifier: Modifier = 
             autoCenterContent = false,
             onGestureListener = null,
         ) {
-            val rig = remember(engine) { PitchRig(engine, materialLoader, c.data, bitmaps).also { c.rig = it; it.controlVisible = c.pitchControlOn } }
+            val rig = remember(engine) { PitchRig(engine, materialLoader, c.data, bitmaps).also { c.rig = it; it.setFloodlights(false); it.controlVisible = c.pitchControlOn } }
             NodeLifecycle(rig.root, null)
             val driver = remember(engine) { Node(engine).also { d -> d.onFrame = { t -> c.onFrame(t, projector) } } }
             NodeLifecycle(driver, null)

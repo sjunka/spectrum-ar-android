@@ -126,7 +126,7 @@ class CameraController {
     var yawBias = 0f
     var easeRate = 3.2f
 
-    private val tacticalBox = NdcBox(0.94f, -0.40f, 0.80f)
+    private val tacticalBox = NdcBox(0.97f, -0.34f, 0.76f)
     private val ballBox = NdcBox(0.80f, -0.30f, 0.62f)
 
     fun setPreset(p: CameraPreset, ball: Vec2 = Vec2.ZERO, others: List<Vec2> = emptyList()) {
@@ -209,7 +209,10 @@ class CameraController {
     private fun freeze() { preset = CameraPreset.FREE }
 
     companion object {
-        fun defaultTactical(aspect: Float, box: NdcBox = NdcBox(0.94f, -0.40f, 0.80f), yawBias: Float = 0f): OrbitPose =
-            CameraMath.frame(CameraMath.pitchCorners(2.5f), -PI.toFloat() / 2 + yawBias, 1.0f, aspect, box)
+        /** Metres of slab around the pitch lines that must stay on screen so the board never looks cropped. */
+        const val BOARD_MARGIN = 7.3f
+
+        fun defaultTactical(aspect: Float, box: NdcBox = NdcBox(0.97f, -0.34f, 0.76f), yawBias: Float = 0f): OrbitPose =
+            CameraMath.frame(CameraMath.pitchCorners(BOARD_MARGIN), -PI.toFloat() / 2 + yawBias, 1.0f, aspect, box)
     }
 }

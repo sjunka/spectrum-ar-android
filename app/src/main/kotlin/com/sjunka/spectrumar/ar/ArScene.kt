@@ -18,6 +18,7 @@ import com.sjunka.spectrumar.app.SpectrumController
 import com.sjunka.spectrumar.core.MatchData
 import com.sjunka.spectrumar.scene.FilamentProjector
 import com.sjunka.spectrumar.scene.PitchRig
+import com.sjunka.spectrumar.scene.flatQuad
 import com.sjunka.spectrumar.scene.RigBitmaps
 import com.sjunka.spectrumar.ui.GestureLayer
 import com.sjunka.spectrumar.ui.SceneGestureCallbacks
@@ -28,7 +29,7 @@ import io.github.sceneview.math.Position
 import io.github.sceneview.math.Rotation
 import io.github.sceneview.math.Scale
 import io.github.sceneview.node.Node
-import io.github.sceneview.node.PlaneNode
+import io.github.sceneview.node.GeometryNode
 import io.github.sceneview.math.Direction
 import io.github.sceneview.math.Size
 import io.github.sceneview.rememberARView
@@ -120,8 +121,8 @@ fun ArScene(c: SpectrumController, bitmaps: RigBitmaps, onFailure: (String) -> U
                 val ring = materialLoader.createImageInstance(ImageTexture.Builder().bitmap(bitmaps.ringMint, TextureType.COLOR).build(engine))
                 val glow = materialLoader.createImageInstance(ImageTexture.Builder().bitmap(bitmaps.baseHome, TextureType.COLOR).build(engine))
                 val root = Node(engine)
-                val r = PlaneNode(engine, size = Size(0.20f, 0.20f), normal = Direction(y = 1f), materialInstance = ring)
-                val g = PlaneNode(engine, size = Size(0.28f, 0.28f), normal = Direction(y = 1f), materialInstance = glow)
+                val r = flatQuad(engine, 0.20f, 0.20f, ring)
+                val g = flatQuad(engine, 0.28f, 0.28f, glow)
                 g.position = Position(0f, -0.002f, 0f)
                 r.isShadowCaster = false; g.isShadowCaster = false; r.isShadowReceiver = false; g.isShadowReceiver = false
                 root.addChildNode(g); root.addChildNode(r); root.isVisible = false

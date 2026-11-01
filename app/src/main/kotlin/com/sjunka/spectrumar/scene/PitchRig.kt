@@ -17,7 +17,7 @@ import io.github.sceneview.node.ConeNode
 import io.github.sceneview.node.CubeNode
 import io.github.sceneview.node.CylinderNode
 import io.github.sceneview.node.Node
-import io.github.sceneview.node.PlaneNode
+import io.github.sceneview.node.GeometryNode
 import io.github.sceneview.node.SphereNode
 import io.github.sceneview.texture.ImageTexture
 import io.github.sceneview.texture.setBitmap
@@ -114,17 +114,17 @@ class PitchRig(
     private val controlMat = ml.createImageInstance(controlTexture)
     private var controlPixels = IntArray(controlW * controlH)
 
-    private val pitchNode: PlaneNode
-    private val controlNode: PlaneNode
+    private val pitchNode: GeometryNode
+    private val controlNode: GeometryNode
     private val playerNodes = ArrayList<Node>(n)
     private val bodyNodes = ArrayList<Node>(n)
     private val ball: SphereNode
     private val ballGroup = Node(engine)
-    private val ballGlow: PlaneNode
-    private val ballShadow: PlaneNode
-    private val selRing: PlaneNode
-    private val carrierRing: PlaneNode
-    private val targetRing: PlaneNode
+    private val ballGlow: GeometryNode
+    private val ballShadow: GeometryNode
+    private val selRing: GeometryNode
+    private val carrierRing: GeometryNode
+    private val targetRing: GeometryNode
     private val marker: ConeNode
     private val lights = ArrayList<Node>()
 
@@ -143,7 +143,7 @@ class PitchRig(
     init {
         val L = MatchData.PITCH_LENGTH; val W = MatchData.PITCH_WIDTH
         val tw = L + 2 * Textures.MARGIN; val th = W + 2 * Textures.MARGIN
-        pitchNode = PlaneNode(engine, size = Size(tw, th), normal = Direction(y = 1f), materialInstance = pitchMat) { }
+        pitchNode = flatQuad(engine, tw, th, pitchMat)
             .also { it.isShadowCaster = false; root.addChildNode(it) }
         // base slab (gives the board a physical thickness in AR)
         CubeNode(engine, size = Size(tw, 1.8f, th), center = Position(0f, -0.95f, 0f), materialInstance = slabMat).also {
@@ -153,7 +153,7 @@ class PitchRig(
             it.isShadowCaster = false; it.isShadowReceiver = false; root.addChildNode(it)
         }
 
-        controlNode = PlaneNode(engine, size = Size(L, W), normal = Direction(y = 1f), materialInstance = controlMat) { }.also {
+        controlNode = flatQuad(engine, L, W, controlMat).also {
             it.position = Position(0f, 0.05f, 0f); it.isVisible = false
             it.isShadowCaster = false; it.isShadowReceiver = false; it.setGlobalBlendOrderEnabled(true); it.setBlendOrder(1)
             root.addChildNode(it)
@@ -171,7 +171,7 @@ class PitchRig(
         for (i in 0 until n) {
             val home = data.players[i].team == Team.HOME
             val g = Node(engine)
-            val base = PlaneNode(engine, size = Size(8.5f, 8.5f), normal = Direction(y = 1f), materialInstance = if (home) baseHome else baseAway) { }
+            val base = flatQuad(engine, 8.5f, 8.5f, if (home) baseHome else baseAway)
             base.position = Position(0f, 0.10f, 0f); base.isShadowCaster = false; base.isShadowReceiver = false
             base.setGlobalBlendOrderEnabled(true); base.setBlendOrder(2)
             val body = Node(engine)
@@ -186,11 +186,11 @@ class PitchRig(
         }
 
         // ball
-        ballShadow = PlaneNode(engine, size = Size(4.2f, 4.2f), normal = Direction(y = 1f), materialInstance = shadowMat) { }.also {
+        ballShadow = flatQuad(engine, 4.2f, 4.2f, shadowMat).also {
             it.position = Position(0f, 0.09f, 0f); it.isShadowCaster = false; it.isShadowReceiver = false
             it.setGlobalBlendOrderEnabled(true); it.setBlendOrder(2)
         }
-        ballGlow = PlaneNode(engine, size = Size(9f, 9f), normal = Direction(y = 1f), materialInstance = ballGlowMat) { }.also {
+        ballGlow = flatQuad(engine, 9f, 9f, ballGlowMat).also {
             it.position = Position(0f, 0.12f, 0f); it.isShadowCaster = false; it.isShadowReceiver = false
             it.setGlobalBlendOrderEnabled(true); it.setBlendOrder(2)
         }
@@ -200,7 +200,7 @@ class PitchRig(
         root.addChildNode(ballGroup)
 
         // rings and marker
-        fun ring(m: MaterialInstance, size: Float, order: Int) = PlaneNode(engine, size = Size(size, size), normal = Direction(y = 1f), materialInstance = m) { }.also {
+        fun ring(m: MaterialInstance, size: Float, order: Int) = flatQuad(engine, size, size, m).also {
             it.position = Position(0f, 0.2f, 0f); it.isVisible = false
             it.isShadowCaster = false; it.isShadowReceiver = false; it.setGlobalBlendOrderEnabled(true); it.setBlendOrder(order)
             root.addChildNode(it)
@@ -225,6 +225,9 @@ class PitchRig(
             g.position = Position(sx * (L / 2 + 13f), 0f, sz * (W / 2 + 11f))
             root.addChildNode(g); lights += g
         }
+        // Flat planes must be visible from above whichever way the generated winding faces.
+        fun noCull(n: Node) { if (n is io.github.sceneview.node.RenderableNode) n.setCulling(false); n.childNodes.forEach { noCull(it) } }
+        noCull(root)
     }
 
     fun setFloodlights(v: Boolean) { lights.forEach { it.isVisible = v } }
@@ -259,7 +262,7 @@ class PitchRig(
             val node = playerNodes[i]
             val drag = i == f.dragged
             node.position = Position(f.px[i], if (drag) 2.2f else 0f, f.pz[i])
-            val s = if (drag) 1.25f else if (i == f.selected) 1.12f else 1f
+            val s = if (drag) 1.45f else if (i == f.selected) 1.38f else 1.25f
             node.scale = Scale(s)
         }
         ballGroup.position = Position(f.bx, 0f, f.bz)

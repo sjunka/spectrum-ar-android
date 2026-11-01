@@ -22,7 +22,8 @@ class Ribbon(private val engine: Engine, material: MaterialInstance, private val
     val node: GeometryNode
 
     init {
-        repeat(maxPoints * 2) { verts += Geometry.Vertex(Position(0f, y, 0f), UP, Float2(0f, 0f)) }
+        // spread placeholder positions so Filament computes a non-empty bounding box (node is hidden until updated)
+        repeat(maxPoints * 2) { k -> verts += Geometry.Vertex(Position(if (k % 2 == 0) -50f else 50f, y, if (k % 2 == 0) -30f else 30f), UP, Float2(0f, 0f)) }
         val idx = ArrayList<Int>()
         for (i in 0 until maxPoints - 1) {
             val a = i * 2; val b = a + 1; val c = a + 2; val d = a + 3
@@ -69,7 +70,7 @@ class DashedArrow(private val engine: Engine, material: MaterialInstance, privat
 
     init {
         val v = ArrayList<Geometry.Vertex>()
-        repeat(dashes * 4) { v += Geometry.Vertex(Position(0f, y, 0f), UP, Float2(0f, 0f)) }
+        repeat(dashes * 4) { k -> v += Geometry.Vertex(Position(if (k % 2 == 0) -50f else 50f, y, if (k % 2 == 0) -30f else 30f), UP, Float2(0f, 0f)) }
         val idx = ArrayList<Int>()
         for (i in 0 until dashes) { val a = i * 4; idx += listOf(a, a + 1, a + 2, a + 1, a + 3, a + 2) }
         geometry = Geometry.Builder(RenderableManager.PrimitiveType.TRIANGLES).vertices(v).indices(idx).build(engine)
@@ -108,4 +109,17 @@ class DashedArrow(private val engine: Engine, material: MaterialInstance, privat
     }
 
     fun hide() { node.isVisible = false }
+}
+
+/** Horizontal quad (w along x, h along z) at y = 0 facing up; replaces PlaneNode so the geometry is fully under our control. */
+fun flatQuad(engine: Engine, w: Float, h: Float, material: MaterialInstance): GeometryNode {
+    val hw = w / 2; val hh = h / 2
+    val v = listOf(
+        Geometry.Vertex(Position(-hw, 0f, -hh), UP, Float2(0f, 0f)),
+        Geometry.Vertex(Position(hw, 0f, -hh), UP, Float2(1f, 0f)),
+        Geometry.Vertex(Position(-hw, 0f, hh), UP, Float2(0f, 1f)),
+        Geometry.Vertex(Position(hw, 0f, hh), UP, Float2(1f, 1f)),
+    )
+    val g = Geometry.Builder(RenderableManager.PrimitiveType.TRIANGLES).vertices(v).indices(listOf(0, 2, 1, 1, 2, 3)).build(engine)
+    return GeometryNode(engine, g, material).also { it.setCulling(false) }
 }

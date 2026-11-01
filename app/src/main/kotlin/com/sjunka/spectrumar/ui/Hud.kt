@@ -84,8 +84,8 @@ fun Hud(
         AnimatedVisibility(!c.demoOn, enter = fadeIn(), exit = fadeOut()) {
             Box(Modifier.fillMaxSize()) {
                 TopBar(c, modeEnabled, onMode, Modifier.align(Alignment.TopCenter))
-                ToolRail(c, Modifier.align(Alignment.CenterEnd).padding(end = 12.dp))
-                Column(Modifier.align(Alignment.BottomCenter), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                Column(Modifier.align(Alignment.BottomCenter), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    ToolRail(c, Modifier.align(Alignment.CenterHorizontally))
                     AnimatedVisibility(c.pitchControlOn, enter = fadeIn() + slideInVertically { it / 2 }, exit = fadeOut() + slideOutVertically { it / 2 }) { ControlBar(c) }
                     AnimatedVisibility(c.whatIfOn, enter = fadeIn() + slideInVertically { it / 2 }, exit = fadeOut() + slideOutVertically { it / 2 }) { WhatIfPanel(c) }
                     BottomPanel(c)
@@ -153,7 +153,7 @@ fun RoundButton(path: String, active: Boolean, desc: String, tint: Color = Tok.T
 
 @Composable
 private fun ToolRail(c: SpectrumController, modifier: Modifier) {
-    Column(modifier, verticalArrangement = Arrangement.spacedBy(10.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+    Row(modifier, horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.Top) {
         RailButton(Icons24.Layers, "Control", c.pitchControlOn) { c.togglePitchControl() }
         RailButton(Icons24.Split, "What-if", c.whatIfOn) { c.toggleWhatIf() }
         RailButton(Icons24.Tag, "Numbers", c.numbersOn) { c.toggleNumbers() }
